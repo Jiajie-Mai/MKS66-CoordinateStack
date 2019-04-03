@@ -21,13 +21,13 @@ The file follows the following format:
 
          sphere: add a sphere to the POLYGON matrix -
                  takes 4 arguemnts (cx, cy, cz, r)
-         torus: add a torus to the POLYGON matrix - 
+         torus: add a torus to the POLYGON matrix -
                 takes 5 arguemnts (cx, cy, cz, r1, r2)
-         box: add a rectangular prism to the POLYGON matrix - 
-              takes 6 arguemnts (x, y, z, width, height, depth)	    
+         box: add a rectangular prism to the POLYGON matrix -
+              takes 6 arguemnts (x, y, z, width, height, depth)
          clear: clears the edge and POLYGON matrices
 
-	 circle: add a circle to the edge matrix - 
+	 circle: add a circle to the edge matrix -
 	         takes 4 arguments (cx, cy, cz, r)
 	 hermite: add a hermite curve to the edge matrix -
 	          takes 8 arguments (x0, y0, x1, y1, rx0, ry0, rx1, ry1)
@@ -59,6 +59,16 @@ See the file script for an example of the file format
 """
 ARG_COMMANDS = [ 'box', 'sphere', 'torus', 'circle', 'bezier', 'hermite', 'line', 'scale', 'move', 'rotate', 'save' ]
 
+def deepCopy( matrix ):
+    output = []
+    for a in matrix:
+        appendList = []
+        for b in a:
+            appendList.append( b )
+        output.append( appendList )
+    return output
+
+
 def parse_file( fname, edges, polygons, csystems, screen, color ):
 
     f = open(fname)
@@ -76,18 +86,46 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             c+= 1
             args = lines[c].strip().split(' ')
 
+
+
+        #change
+        if line == 'push':
+            pass
+
+
+
+        #change
+        if line == 'pop':
+            pass
+
+
+
+        #change
         if line == 'sphere':
             #print 'SPHERE\t' + str(args)
             add_sphere(polygons,
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step_3d)
 
+            # csystems.append('sphere')
+            # temporary = deepCopy(polygons)
+            # add_sphere(temporary,
+            #            float(args[0]), float(args[1]), float(args[2]),
+            #            float(args[3]), step_3d)
+            #
+
+
+
+        #change
         elif line == 'torus':
             #print 'TORUS\t' + str(args)
             add_torus(polygons,
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), step_3d)
 
+
+
+        #change
         elif line == 'box':
             #print 'BOX\t' + str(args)
             add_box(polygons,
@@ -116,16 +154,25 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), float(args[5]) )
 
+
+
+        #change
         elif line == 'scale':
             #print 'SCALE\t' + str(args)
             t = make_scale(float(args[0]), float(args[1]), float(args[2]))
             matrix_mult(t, transform)
 
+
+
+        #change
         elif line == 'move':
             #print 'MOVE\t' + str(args)
             t = make_translate(float(args[0]), float(args[1]), float(args[2]))
             matrix_mult(t, transform)
 
+
+
+        #change
         elif line == 'rotate':
             #print 'ROTATE\t' + str(args)
             theta = float(args[1]) * (math.pi / 180)
@@ -138,13 +185,16 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                 t = make_rotZ(theta)
             matrix_mult(t, transform)
 
+        #Kinda useless
         elif line == 'ident':
             ident(transform)
 
+        #Kinda useless
         elif line == 'apply':
             matrix_mult( transform, edges )
             matrix_mult( transform, polygons )
 
+        #Kinda useless
         elif line == 'clear':
             edges = []
             polygons = []
