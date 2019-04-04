@@ -57,7 +57,7 @@ The file follows the following format:
 
 See the file script for an example of the file format
 """
-ARG_COMMANDS = [ 'box', 'sphere', 'torus', 'circle', 'bezier', 'hermite', 'line', 'scale', 'move', 'rotate', 'save' ]
+ARG_COMMANDS = [ 'pop', 'push', 'box', 'sphere', 'torus', 'circle', 'bezier', 'hermite', 'line', 'scale', 'move', 'rotate', 'save' ]
 
 def deepCopy( matrix ):
     output = []
@@ -96,6 +96,7 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
 
         #change
         if line == 'pop':
+
             pass
 
 
@@ -107,12 +108,12 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step_3d)
 
-            # csystems.append('sphere')
             # temporary = deepCopy(polygons)
             # add_sphere(temporary,
             #            float(args[0]), float(args[1]), float(args[2]),
             #            float(args[3]), step_3d)
-            #
+            #draw_polygons(temporary)
+
 
 
 
@@ -123,6 +124,12 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), step_3d)
 
+            # temporary = deepCopy(polygons)
+            # add_torus(temporary,
+            #           float(args[0]), float(args[1]), float(args[2]),
+            #           float(args[3]), float(args[4]), step_3d)
+            #draw_polygons(temporary)
+
 
 
         #change
@@ -132,12 +139,29 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                     float(args[0]), float(args[1]), float(args[2]),
                     float(args[3]), float(args[4]), float(args[5]))
 
+            # temporary = deepCopy(polygons)
+            # add_box(temporary,
+            #         float(args[0]), float(args[1]), float(args[2]),
+            #         float(args[3]), float(args[4]), float(args[5]))
+            # draw_polygons(temporary)
+
+
+
+        #change
         elif line == 'circle':
             #print 'CIRCLE\t' + str(args)
             add_circle(edges,
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step)
 
+            # temporary = deepCopy(edges)
+            # add_circle(edges,
+            #            float(args[0]), float(args[1]), float(args[2]),
+            #            float(args[3]), step)
+            #draw_lines(temporary)
+
+
+        #change
         elif line == 'hermite' or line == 'bezier':
             #print 'curve\t' + line + ": " + str(args)
             add_curve(edges,
@@ -147,6 +171,18 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                       float(args[6]), float(args[7]),
                       step, line)
 
+            # temporary = deepCopy(edges)
+            # add_curve(edges,
+            #           float(args[0]), float(args[1]),
+            #           float(args[2]), float(args[3]),
+            #           float(args[4]), float(args[5]),
+            #           float(args[6]), float(args[7]),
+            #           step, line)
+            #draw_lines(temporary)
+
+
+
+        #change
         elif line == 'line':
             #print 'LINE\t' + str(args)
 
@@ -154,6 +190,11 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), float(args[5]) )
 
+            # temporary = deepCopy(edges)
+            # add_edge( edges,
+            #           float(args[0]), float(args[1]), float(args[2]),
+            #           float(args[3]), float(args[4]), float(args[5]) )
+            #draw_lines(temporary)
 
 
         #change
