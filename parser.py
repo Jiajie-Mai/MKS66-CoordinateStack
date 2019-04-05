@@ -86,20 +86,17 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             c+= 1
             args = lines[c].strip().split(' ')
 
-
-
         #change
         if line == 'push':
-            pass
-
-
+            i = csystems[-1]
+            copy = [e[:] for e in i]
+            csystems.append(copy)
+            print(copy)
 
         #change
         if line == 'pop':
-
-            pass
-
-
+            csystems.pop()
+            print("did it")
 
         #change
         if line == 'sphere':
@@ -107,15 +104,9 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             add_sphere(polygons,
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step_3d)
-
-            # temporary = deepCopy(polygons)
-            # add_sphere(temporary,
-            #            float(args[0]), float(args[1]), float(args[2]),
-            #            float(args[3]), step_3d)
-            #draw_polygons(temporary)
-
-
-
+            matrix_mult(csystems[-1], polygons)
+            draw_polygons(polygons, screen, color)
+            polygons = []
 
         #change
         elif line == 'torus':
@@ -123,14 +114,9 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             add_torus(polygons,
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), step_3d)
-
-            # temporary = deepCopy(polygons)
-            # add_torus(temporary,
-            #           float(args[0]), float(args[1]), float(args[2]),
-            #           float(args[3]), float(args[4]), step_3d)
-            #draw_polygons(temporary)
-
-
+            matrix_mult(csystems[-1], polygons)
+            draw_polygons(polygons, screen, color)
+            polygons = []
 
         #change
         elif line == 'box':
@@ -138,14 +124,9 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             add_box(polygons,
                     float(args[0]), float(args[1]), float(args[2]),
                     float(args[3]), float(args[4]), float(args[5]))
-
-            # temporary = deepCopy(polygons)
-            # add_box(temporary,
-            #         float(args[0]), float(args[1]), float(args[2]),
-            #         float(args[3]), float(args[4]), float(args[5]))
-            # draw_polygons(temporary)
-
-
+            matrix_mult(csystems[-1], polygons)
+            draw_polygons(polygons, screen, color)
+            polygons = []
 
         #change
         elif line == 'circle':
@@ -153,13 +134,9 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             add_circle(edges,
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step)
-
-            # temporary = deepCopy(edges)
-            # add_circle(edges,
-            #            float(args[0]), float(args[1]), float(args[2]),
-            #            float(args[3]), step)
-            #draw_lines(temporary)
-
+            matrix_mult(csystems[-1], edges)
+            draw_lines(edges, screen, color)
+            # edges = []
 
         #change
         elif line == 'hermite' or line == 'bezier':
@@ -170,17 +147,9 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                       float(args[4]), float(args[5]),
                       float(args[6]), float(args[7]),
                       step, line)
-
-            # temporary = deepCopy(edges)
-            # add_curve(edges,
-            #           float(args[0]), float(args[1]),
-            #           float(args[2]), float(args[3]),
-            #           float(args[4]), float(args[5]),
-            #           float(args[6]), float(args[7]),
-            #           step, line)
-            #draw_lines(temporary)
-
-
+            matrix_mult(csystems[-1], edges)
+            draw_lines(edges, screen, color)
+            # edges = []
 
         #change
         elif line == 'line':
@@ -189,29 +158,23 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             add_edge( edges,
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), float(args[5]) )
-
-            # temporary = deepCopy(edges)
-            # add_edge( edges,
-            #           float(args[0]), float(args[1]), float(args[2]),
-            #           float(args[3]), float(args[4]), float(args[5]) )
-            #draw_lines(temporary)
-
+            matrix_mult(csystems[-1], edges)
+            draw_polygons(polygons, screen, color)
+            # edges = []
 
         #change
         elif line == 'scale':
             #print 'SCALE\t' + str(args)
             t = make_scale(float(args[0]), float(args[1]), float(args[2]))
-            matrix_mult(t, transform)
-
-
+            matrix_mult(csystems[-1],t)
+            csystems[-1] = t[:]
 
         #change
         elif line == 'move':
             #print 'MOVE\t' + str(args)
             t = make_translate(float(args[0]), float(args[1]), float(args[2]))
-            matrix_mult(t, transform)
-
-
+            matrix_mult(csystems[-1],t)
+            csystems[-1] = t[:]
 
         #change
         elif line == 'rotate':
@@ -224,7 +187,8 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                 t = make_rotY(theta)
             else:
                 t = make_rotZ(theta)
-            matrix_mult(t, transform)
+            matrix_mult(csystems[-1],t)
+            csystems[-1] = t[:]
 
         #Kinda useless
         elif line == 'ident':
