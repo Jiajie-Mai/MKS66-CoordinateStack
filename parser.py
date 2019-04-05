@@ -30,17 +30,17 @@ The file follows the following format:
 	         takes 8 arguments (x0, y0, x1, y1, x2, y2, x3, y3)
          line: add a line to the edge matrix -
                takes 6 arguemnts (x0, y0, z0, x1, y1, z1)
-         ident: set the csystems[-1] matrix to the identity matrix -
+         ident: set the transform matrix to the identity matrix -
          scale: create a scale matrix,
-                then multiply the csystems[-1] matrix by the scale matrix -
+                then multiply the transform matrix by the scale matrix -
                 takes 3 arguments (sx, sy, sz)
          move: create a translation matrix,
-               then multiply the csystems[-1] matrix by the translation matrix -
+               then multiply the transform matrix by the translation matrix -
                takes 3 arguments (tx, ty, tz)
          rotate: create a rotation matrix,
-                 then multiply the csystems[-1] matrix by the rotation matrix -
+                 then multiply the transform matrix by the rotation matrix -
                  takes 2 arguments (axis, theta) axis should be x y or z
-         apply: apply the current csystems[-1]ation matrix to the edge and POLYGON matrices
+         apply: apply the current transformation matrix to the edge and POLYGON matrices
          display: clear the screen, then
                   draw the lines of the edge and POLYGON matrices to the screen
                   display the screen
@@ -57,6 +57,8 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
 
     f = open(fname)
     lines = f.readlines()
+    temp = []
+    currang = [0,0,0]
 
     step = 100
     step_3d = 20
@@ -70,72 +72,86 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
             c+= 1
             args = lines[c].strip().split(' ')
 
-        if line == 'sphere':
+        if line == 'push':
+            csystems.append([lst[:] for lst in csystems[-1]]) #Copy and append last coordinate system
+
+        elif line == 'pop':
+            csystems.pop()
+
+        elif line == 'sphere':
             #print 'SPHERE\t' + str(args)
-            add_sphere(polygons,
+            add_sphere(temp,
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step_3d)
-            matrix_mult(csystems[-1],polygons)
-            draw_polygons(polygons, screen, color)
-            polygons = []
+            matrix_mult(csystems[-1],temp)
+            for i in temp:
+                polygons.append(i)
+            temp = []
 
         elif line == 'torus':
             #print 'TORUS\t' + str(args)
-            add_torus(polygons,
+            add_torus(temp,
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), step_3d)
-            matrix_mult(csystems[-1],polygons)
-            draw_polygons(polygons, screen, color)
-            polygons = []
+            matrix_mult(csystems[-1],temp)
+            for i in temp:
+                polygons.append(i)
+            temp = []
 
         elif line == 'box':
             #print 'BOX\t' + str(args)
-            add_box(polygons,
+            add_box(temp,
                     float(args[0]), float(args[1]), float(args[2]),
                     float(args[3]), float(args[4]), float(args[5]))
-            matrix_mult(csystems[-1],polygons)
-            draw_polygons(polygons, screen, color)
-            polygons = []
+            matrix_mult(csystems[-1],temp)
+            for i in temp:
+                polygons.append(i)
+            temp = []
 
         elif line == 'circle':
             #print 'CIRCLE\t' + str(args)
-            add_circle(edges,
+            add_circle(temp,
                        float(args[0]), float(args[1]), float(args[2]),
                        float(args[3]), step)
-            matrix_mult(csystems[-1],edges)
-            draw_lines(edges, screen, color)
+            matrix_mult(csystems[-1],temp)
+            for i in temp:
+                edges.append(i)
+            temp = []
 
         elif line == 'hermite' or line == 'bezier':
             #print 'curve\t' + line + ": " + str(args)
-            add_curve(edges,
+            add_curve(temp,
                       float(args[0]), float(args[1]),
                       float(args[2]), float(args[3]),
                       float(args[4]), float(args[5]),
                       float(args[6]), float(args[7]),
                       step, line)
-            matrix_mult(csystems[-1],edges)
-            draw_lines(edges, screen, color)
+            matrix_mult(csystems[-1],temp)
+            for i in temp:
+                edges.append(i)
+            temp = []
 
         elif line == 'line':
             #print 'LINE\t' + str(args)
-
-            add_edge( edges,
+            add_edge( temp,
                       float(args[0]), float(args[1]), float(args[2]),
                       float(args[3]), float(args[4]), float(args[5]) )
-            matrix_mult(csystems[-1],edges)
-            draw_lines(edges, screen, color)
+            matrix_mult(csystems[-1],temp)
+            for i in temp:
+                edges.append(i)
+            temp = []
 
         elif line == 'scale':
             #print 'SCALE\t' + str(args)
             t = make_scale(float(args[0]), float(args[1]), float(args[2]))
-            matrix_mult(csystems[-1],t)
-            csystems[-1] = t[:]
+            matrix_mult(csystems[-1], t)
+            csystems[-1] = t
 
         elif line == 'move':
             #print 'MOVE\t' + str(args)
             t = make_translate(float(args[0]), float(args[1]), float(args[2]))
-            matrix_mult(csystems[-1],t)
-            csystems[-1] = t[:]
+            matrix_mult(csystems[-1], t)
+            csystems[-1] = t
 
         elif line == 'rotate':
             #print 'ROTATE\t' + str(args)
@@ -147,21 +163,27 @@ def parse_file( fname, edges, polygons, csystems, screen, color ):
                 t = make_rotY(theta)
             else:
                 t = make_rotZ(theta)
-            matrix_mult(csystems[-1],t)
-            csystems[-1] = t[:]
+            matrix_mult(csystems[-1], t)
+            csystems[-1] = t
 
-        elif line == 'push':
-            d = csystems[-1]
-            copy = [a[:] for a in d]
-            csystems.append(copy)
+        elif line == 'ident':
+            ident(csystems[-1])
 
-        elif line == 'pop':
-            csystems.pop()
+        elif line == 'apply':
+            matrix_mult( csystems[-1], temp )
+            matrix_mult( csystems[-1], polygons )
+
+        elif line == 'clear':
+            edges = []
+            polygons = []
 
         elif line == 'display' or line == 'save':
+            clear_screen(screen)
+            draw_lines(edges, screen, color)
+            draw_polygons(polygons, screen, color)
 
             if line == 'display':
                 display(screen)
             else:
                 save_extension(screen, args[0])
-c+= 1
+        c+= 1
